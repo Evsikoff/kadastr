@@ -1,6 +1,6 @@
 {
   "appId": "co.your.kadastr",
-  "appName": "kadastr",
+  "appName": "Кадастр",
   "webDir": "dist",
   "bundledWebRuntime": false,
   "plugins": {
