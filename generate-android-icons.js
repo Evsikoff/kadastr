@@ -1,98 +1,74 @@
-import sharp from 'sharp';
 import fs from 'fs';
 import path from 'path';
 
-// Размеры иконок для Android
-const iconSizes = {
-  'mipmap-mdpi': 48,
-  'mipmap-hdpi': 72,
-  'mipmap-xhdpi': 96,
-  'mipmap-xxhdpi': 144,
-  'mipmap-xxxhdpi': 192
-};
-
-// Размеры foreground иконок для адаптивных иконок (Android 8.0+)
-const foregroundSizes = {
-  'mipmap-mdpi': 108,
-  'mipmap-hdpi': 162,
-  'mipmap-xhdpi': 216,
-  'mipmap-xxhdpi': 324,
-  'mipmap-xxxhdpi': 432
-};
-
 const androidResPath = './android/app/src/main/res';
-const sourceIcon = './public/icons/icon-512x512.png';
+const iconsPath = './public/icons';
 
-async function generateAndroidIcons() {
-  console.log('🚀 Генерация иконок для Android...\n');
+// Маппинг иконок из public/icons в Android ресурсы
+const iconMapping = [
+  // Основные иконки (ic_launcher и ic_launcher_round)
+  { source: 'icon-72x72.png', targets: ['mipmap-mdpi/ic_launcher.png', 'mipmap-mdpi/ic_launcher_round.png'] },
+  { source: 'icon-72x72.png', targets: ['mipmap-hdpi/ic_launcher.png', 'mipmap-hdpi/ic_launcher_round.png'] },
+  { source: 'icon-96x96.png', targets: ['mipmap-xhdpi/ic_launcher.png', 'mipmap-xhdpi/ic_launcher_round.png'] },
+  { source: 'icon-144x144.png', targets: ['mipmap-xxhdpi/ic_launcher.png', 'mipmap-xxhdpi/ic_launcher_round.png'] },
+  { source: 'icon-192x192.png', targets: ['mipmap-xxxhdpi/ic_launcher.png', 'mipmap-xxxhdpi/ic_launcher_round.png'] },
 
-  // Проверяем наличие исходной иконки
-  if (!fs.existsSync(sourceIcon)) {
-    console.error('❌ Файл иконки не найден:', sourceIcon);
+  // Foreground иконки для адаптивных иконок (Android 8.0+)
+  { source: 'icon-128x128.png', targets: ['mipmap-mdpi/ic_launcher_foreground.png'] },
+  { source: 'icon-152x152.png', targets: ['mipmap-hdpi/ic_launcher_foreground.png'] },
+  { source: 'icon-192x192.png', targets: ['mipmap-xhdpi/ic_launcher_foreground.png'] },
+  { source: 'icon-384x384.png', targets: ['mipmap-xxhdpi/ic_launcher_foreground.png'] },
+  { source: 'icon-512x512.png', targets: ['mipmap-xxxhdpi/ic_launcher_foreground.png'] }
+];
+
+function copyIcons() {
+  console.log('🚀 Копирование иконок из public/icons в Android проект...\n');
+
+  let successCount = 0;
+  let errorCount = 0;
+
+  for (const { source, targets } of iconMapping) {
+    const sourcePath = path.join(iconsPath, source);
+
+    // Проверяем наличие исходного файла
+    if (!fs.existsSync(sourcePath)) {
+      console.error(`  ✗ Исходный файл не найден: ${source}`);
+      errorCount++;
+      continue;
+    }
+
+    // Копируем в каждую целевую папку
+    for (const target of targets) {
+      const targetPath = path.join(androidResPath, target);
+      const targetDir = path.dirname(targetPath);
+
+      // Создаём папку, если её нет
+      if (!fs.existsSync(targetDir)) {
+        fs.mkdirSync(targetDir, { recursive: true });
+      }
+
+      try {
+        fs.copyFileSync(sourcePath, targetPath);
+        console.log(`  ✓ ${source} → ${target}`);
+        successCount++;
+      } catch (error) {
+        console.error(`  ✗ Ошибка при копировании ${source} → ${target}:`, error.message);
+        errorCount++;
+      }
+    }
+  }
+
+  console.log(`\n📊 Результат: ${successCount} успешно, ${errorCount} ошибок`);
+
+  if (errorCount === 0) {
+    console.log('✅ Все иконки успешно скопированы!');
+    console.log('\n💡 Следующие шаги:');
+    console.log('   1. Запустите: npx cap sync android');
+    console.log('   2. Проверьте иконки в Android Studio');
+  } else {
+    console.error('❌ Некоторые иконки не были скопированы');
     process.exit(1);
   }
-
-  // Генерируем основные иконки
-  console.log('📱 Генерация основных иконок (ic_launcher)...');
-  for (const [folder, size] of Object.entries(iconSizes)) {
-    const folderPath = path.join(androidResPath, folder);
-
-    // Создаём папку, если её нет
-    if (!fs.existsSync(folderPath)) {
-      fs.mkdirSync(folderPath, { recursive: true });
-    }
-
-    try {
-      await sharp(sourceIcon)
-        .resize(size, size, {
-          fit: 'contain',
-          background: { r: 255, g: 255, b: 255, alpha: 0 }
-        })
-        .png()
-        .toFile(path.join(folderPath, 'ic_launcher.png'));
-
-      await sharp(sourceIcon)
-        .resize(size, size, {
-          fit: 'contain',
-          background: { r: 255, g: 255, b: 255, alpha: 0 }
-        })
-        .png()
-        .toFile(path.join(folderPath, 'ic_launcher_round.png'));
-
-      console.log(`  ✓ ${folder}: ${size}x${size}px`);
-    } catch (error) {
-      console.error(`  ✗ Ошибка при создании ${folder}:`, error.message);
-    }
-  }
-
-  // Генерируем foreground иконки
-  console.log('\n🎨 Генерация foreground иконок (ic_launcher_foreground)...');
-  for (const [folder, size] of Object.entries(foregroundSizes)) {
-    const folderPath = path.join(androidResPath, folder);
-
-    if (!fs.existsSync(folderPath)) {
-      fs.mkdirSync(folderPath, { recursive: true });
-    }
-
-    try {
-      await sharp(sourceIcon)
-        .resize(size, size, {
-          fit: 'contain',
-          background: { r: 255, g: 255, b: 255, alpha: 0 }
-        })
-        .png()
-        .toFile(path.join(folderPath, 'ic_launcher_foreground.png'));
-
-      console.log(`  ✓ ${folder}: ${size}x${size}px`);
-    } catch (error) {
-      console.error(`  ✗ Ошибка при создании ${folder}:`, error.message);
-    }
-  }
-
-  console.log('\n✅ Все Android иконки успешно созданы!');
-  console.log('\n💡 Следующие шаги:');
-  console.log('   1. Запустите: npx cap sync android');
-  console.log('   2. Проверьте иконки в Android Studio');
 }
 
-generateAndroidIcons().catch(console.error);
+copyIcons();
