@@ -1,0 +1,4 @@
+storePassword=yourStorePassword
+keyPassword=yourKeyPassword
+keyAlias=kadastr
+storeFile=kadastr-release-key.keystore
