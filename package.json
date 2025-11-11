@@ -5,7 +5,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "icons:pwa": "node generate-icons.js",
+    "icons:android": "node generate-android-icons.js",
+    "icons": "npm run icons:pwa && npm run icons:android"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.4",
