@@ -1,5 +1,15 @@
 {
   "appId": "co.your.kadastr",
   "appName": "kadastr",
-  "webDir": "www"
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0
+    }
+  },
+  "server": {
+    "androidScheme": "https",
+    "iosScheme": "https"
+  }
 }
