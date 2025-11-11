@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:android": "npm run icons:android && npm run build && npx cap sync android",
     "preview": "vite preview",
     "icons:pwa": "node generate-icons.js",
     "icons:android": "node generate-android-icons.js",
