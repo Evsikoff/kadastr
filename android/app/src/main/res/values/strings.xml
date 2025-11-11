@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">kadastr</string>
+    <string name="app_name">Кадастр</string>
     <string name="title_activity_main">kadastr</string>
     <string name="package_name">co.your.kadastr</string>
     <string name="custom_url_scheme">co.your.kadastr</string>
